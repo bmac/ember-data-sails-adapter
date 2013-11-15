@@ -13,7 +13,7 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   find: function(store, type, id) {
-    return this.socket(this.buildURL(type, id), 'get');
+    return this.socket(this.buildURL(type.typeKey, id), 'get');
   },
 
   createRecord: function(store, type, record) {
