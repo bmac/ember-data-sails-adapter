@@ -9,56 +9,48 @@ var get = Ember.get;
 DS.SailsAdapter = DS.Adapter.extend({
   init: function () {
     this._listenToSocket();
+    this._super();
   },
 
   find: function(store, type, id) {
-    var url = type.url;
-    url = url.fmt(id);
-
-    return this.socket(url, 'get');
+    return this.socket(this.buildURL(type, id), 'get');
   },
 
   createRecord: function(store, type, record) {
-    var url = type.url;
     var data = {};
     var serializer = store.serializerFor(type.typeKey);
     serializer.serializeIntoHash(data, type, record, { includeId: true });
 
-    return this.socket(url, 'post', data);
+    return this.socket(this.buildURL(type.typeKey), 'post', data);
   },
 
   updateRecord: function(store, type, record) {
-    var url = type.url;
     var data = {};
     var serializer = store.serializerFor(type.typeKey);
 
     serializer.serializeIntoHash(data, type, record);
 
     var id = get(record, 'id');
-    url = url.fmt(id);
 
-    return this.socket(url, 'put', data);
+    return this.socket(this.buildURL(type.typeKey, id), 'put', data);
   },
 
   deleteRecord: function(store, type, record) {
-    var url = type.url;
     var data = {};
     var serializer = store.serializerFor(type.typeKey);
+    var id = get(record, 'id');
 
     serializer.serializeIntoHash(data, type, record);
 
-    var id = get(record, 'id');
-    url = url.fmt(id);
-
-    return this.socket(url, 'delete', data);
+    return this.socket(this.buildURL(type.typeKey, id), 'delete', data);
   },
 
   findAll: function(store, type, sinceToken) {
-    return this.socket(type.url, 'get');
+    return this.socket(this.buildURL(type.typeKey), 'get');
   },
 
   findQuery: function(store, type, query) {
-    return this.socket(type.url, 'get', query);
+    return this.socket(this.buildURL(type.typeKey), 'get', query);
   },
 
   isErrorObject: function(data) {
@@ -66,16 +58,29 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   socket: function(url, method, data ) {
+    var isErrorObject = this.isErrorObject.bind(this);
     method = method.toLowerCase();
     return new RSVP.Promise(function(resolve, reject) {
       socket[method](url, function (data) {
-        if (this.isErrorObject(data)) {
+        if (isErrorObject(data)) {
           reject(data);
         } else {
           resolve(data);
         }
       });
     });
+  },
+
+  buildURL: function(type, id) {
+    var url = [];
+
+    if (type) { url.push(type); }
+    if (id) { url.push(id); }
+
+    url = url.join('/');
+    url = '/' + url;
+
+    return url;
   },
 
   _listenToSocket: function() {
