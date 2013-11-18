@@ -18,18 +18,15 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   createRecord: function(store, type, record) {
-    var data = {};
     var serializer = store.serializerFor(type.typeKey);
-    serializer.serializeIntoHash(data, type, record, { includeId: true });
+    var data = serializer.serialize(record, { includeId: true });
 
     return this.socket(this.buildURL(type.typeKey), 'post', data);
   },
 
   updateRecord: function(store, type, record) {
-    var data = {};
     var serializer = store.serializerFor(type.typeKey);
-
-    serializer.serializeIntoHash(data, type, record);
+    var data = serializer.serialize(record);
 
     var id = get(record, 'id');
 
@@ -37,11 +34,10 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   deleteRecord: function(store, type, record) {
-    var data = {};
     var serializer = store.serializerFor(type.typeKey);
     var id = get(record, 'id');
 
-    serializer.serializeIntoHash(data, type, record);
+    var data = serializer.serialize(record);
 
     return this.socket(this.buildURL(type.typeKey, id), 'delete', data);
   },
@@ -62,8 +58,10 @@ DS.SailsAdapter = DS.Adapter.extend({
     var isErrorObject = this.isErrorObject.bind(this);
     method = method.toLowerCase();
     return new RSVP.Promise(function(resolve, reject) {
-      socket[method](url, function (data) {
+      this._log(method, url, data);
+      socket[method](url, data, function (data) {
         if (isErrorObject(data)) {
+          this._log(data);
           reject(data);
         } else {
           resolve(data);
@@ -97,5 +95,10 @@ DS.SailsAdapter = DS.Adapter.extend({
         store.deleteRecord({id: message.id});
       }
     });
+  },
+  _log: function() {
+    if (this.log) {
+      console.log.apply(console, arguments);
+    }
   }
 });
