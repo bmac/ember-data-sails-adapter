@@ -7,6 +7,7 @@ var RSVP = Ember.RSVP;
 var get = Ember.get;
 
 DS.SailsAdapter = DS.Adapter.extend({
+  prefix: '',
   init: function () {
     this._listenToSocket();
     this._super();
@@ -78,7 +79,7 @@ DS.SailsAdapter = DS.Adapter.extend({
     if (id) { url.push(id); }
 
     url = url.join('/');
-    url = '/' + url;
+    url = this.prefix + '/' + url;
 
     return url;
   },
