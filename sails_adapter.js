@@ -8,6 +8,7 @@ var get = Ember.get;
 
 DS.SailsAdapter = DS.Adapter.extend({
   prefix: '',
+  camelize: true,
   init: function () {
     this._listenToSocket();
     this._super();
@@ -73,7 +74,14 @@ DS.SailsAdapter = DS.Adapter.extend({
   buildURL: function(type, id) {
     var url = [];
 
-    if (type) { url.push(type); }
+    type = type || '';
+    if (this.camelize) {
+      type = Ember.String.camelize(type);
+    }
+
+    if (type) {
+      url.push(type);
+    }
     if (id) { url.push(id); }
 
     url = url.join('/');
