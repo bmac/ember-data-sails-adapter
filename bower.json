@@ -1,6 +1,6 @@
 {
     "name": "ember-data-sails-adapter",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "main": "sails-adapter.js",
     "dependencies": {
         "ember": "~1.0.0",

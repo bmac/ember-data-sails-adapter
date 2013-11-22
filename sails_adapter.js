@@ -58,11 +58,12 @@ DS.SailsAdapter = DS.Adapter.extend({
   socket: function(url, method, data ) {
     var isErrorObject = this.isErrorObject.bind(this);
     method = method.toLowerCase();
+    var adapter = this;
+    adapter._log(method, url, data);
     return new RSVP.Promise(function(resolve, reject) {
-      this._log(method, url, data);
       socket[method](url, data, function (data) {
         if (isErrorObject(data)) {
-          this._log(data);
+          adapter._log('error:', data);
           reject(data);
         } else {
           resolve(data);
