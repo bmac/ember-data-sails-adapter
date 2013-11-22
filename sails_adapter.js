@@ -105,6 +105,29 @@ DS.SailsAdapter = DS.Adapter.extend({
       }
     });
   },
+
+  _listenToSocket: function() {
+    var store = this.container.lookup('store:main');
+    var App = this.container.lookup('application:main');
+
+    function findModelName(model) {
+      return Ember.A(Object.keys(App)).find(function(prop) {
+        return prop.toLowerCase() === model.toLowerCase();
+      });
+    }
+
+
+    socket.on('message', function (message) {
+      if (message.verb === 'create') {
+        store.push(findModelName(message.model), message.data);
+      }
+      if (message.verb === 'update') {
+        store.push(findModelName(message.model), message.data);
+      }
+      // TODO delete
+    });
+  },
+
   _log: function() {
     if (this.log) {
       console.log.apply(console, arguments);
