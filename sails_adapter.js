@@ -93,21 +93,6 @@ DS.SailsAdapter = DS.Adapter.extend({
 
   _listenToSocket: function() {
     var store = this.container.lookup('store:main');
-    socket.on('message', function (message) {
-      if (message.verb === 'create') {
-        store.push(message.model, message.data);
-      }
-      if (message.verb === 'update') {
-        store.push(message.model, message.data);
-      }
-      if (message.verb === 'destroy') {
-        store.deleteRecord({id: message.id});
-      }
-    });
-  },
-
-  _listenToSocket: function() {
-    var store = this.container.lookup('store:main');
     var App = this.container.lookup('application:main');
 
     function findModelName(model) {
