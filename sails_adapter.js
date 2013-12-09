@@ -9,7 +9,7 @@ var get = Ember.get;
 DS.SailsAdapter = DS.Adapter.extend({
   prefix: '',
   camelize: true,
-  log: true,
+  log: false,
   init: function () {
     this._listenToSocket();
     this._super();
