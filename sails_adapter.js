@@ -9,10 +9,36 @@ var get = Ember.get;
 DS.SailsAdapter = DS.Adapter.extend({
   prefix: '',
   camelize: true,
+  log: true,
   init: function () {
     this._listenToSocket();
     this._super();
   },
+
+  // TODO find a better way to handle this
+
+  // Reason: In a Sails Model updated, created, or destoryed message
+  // the model name is always lowercase. This makes it difficult to
+  // lookup models with multipart names on the ember container.
+
+  // One solution could be to implement a custom resolveModel method
+  // on the resolver to work with lowercase names. But in some cases
+  // we don't want to impose a custom resolver requirement on users of
+  // the sails_adapter.
+
+  // This modelName hash is an ugly escape has that allows a user to
+  // define a mapping between the sails lowercase model name and a
+  // string that ember can use to recognize a model with multiple
+  // parts.
+
+  // For Example A `User` model would not need to be registered with
+  // this map because ember can use the string 'user' to look up the
+  // model just fine. However a `ContentType` model will need to be
+  // registered with this map because attempting to lookup a model
+  // named 'contenttype' will not return the `ContentType` model.
+
+  // modelNameMap: {'contenttype': 'ContentType'}
+  modelNameMap: {},
 
   find: function(store, type, id) {
     return this.socket(this.buildURL(type.typeKey, id), 'get');
@@ -92,15 +118,14 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   _listenToSocket: function() {
+    var self = this;
     var store = this.container.lookup('store:main');
     var App = this.container.lookup('application:main');
 
     function findModelName(model) {
-      return Ember.A(Object.keys(App)).find(function(prop) {
-        return prop.toLowerCase() === model.toLowerCase();
-      });
+      var mappedName = self.modelNameMap[model];
+      return mappedName || model;
     }
-
 
     socket.on('message', function (message) {
       if (message.verb === 'create') {
