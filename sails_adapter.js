@@ -7,6 +7,7 @@ var RSVP = Ember.RSVP;
 var get = Ember.get;
 
 DS.SailsAdapter = DS.Adapter.extend({
+  defaultSerializer: '_default',
   prefix: '',
   camelize: true,
   log: false,
@@ -129,10 +130,10 @@ DS.SailsAdapter = DS.Adapter.extend({
 
     socket.on('message', function (message) {
       if (message.verb === 'create') {
-        store.push(findModelName(message.model), message.data);
+        store.pushPayload(findModelName(message.model), message.data);
       }
       if (message.verb === 'update') {
-        store.push(findModelName(message.model), message.data);
+        store.pushPayload(findModelName(message.model), message.data);
       }
       // TODO delete
     });
