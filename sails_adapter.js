@@ -128,12 +128,20 @@ DS.SailsAdapter = DS.Adapter.extend({
       return mappedName || model;
     }
 
+    function pushMessage(message) {
+      var modelName = findModelName(message.model);
+      var type = store.modelFor(modelName);
+      var serializer = store.serializerFor(type.typeKey);
+      var record = serializer.extractSingle(store, type, message.data);
+      store.push(modelName, record);
+    }
+
     socket.on('message', function (message) {
       if (message.verb === 'create') {
-        store.pushPayload(findModelName(message.model), message.data);
+        pushMessage(message);
       }
       if (message.verb === 'update') {
-        store.pushPayload(findModelName(message.model), message.data);
+        pushMessage(message);
       }
       // TODO delete
     });
