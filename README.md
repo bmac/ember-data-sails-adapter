@@ -9,5 +9,5 @@ bower install ember-data-sails-adapter
 ```
 
 ```html
-<script src="bower_components/ember-data-sails-adapter/sails-adapter.js"></script>
+<script src="/bower_components/ember-data-sails-adapter/sails-adapter.js"></script>
 ```
