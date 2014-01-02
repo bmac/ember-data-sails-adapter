@@ -29,7 +29,7 @@ App.ApplicationAdapter = DS.SailsAdapter.extend({
 Type: `String`
 Default value: `''`
 
-The filename used to store the access token after a successful auth.
+The prefix to add to the request uris.
 
 #### log
 Type: `Boolean`
