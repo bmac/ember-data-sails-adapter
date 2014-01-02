@@ -91,7 +91,7 @@ DS.SailsAdapter = DS.Adapter.extend({
       socket[method](url, data, function (data) {
         if (isErrorObject(data)) {
           adapter._log('error:', data);
-          reject(new DS.InvalidError(data));
+          reject(new DS.InvalidError(adapter.formatError(data)));
         } else {
           resolve(data);
         }
@@ -151,5 +151,36 @@ DS.SailsAdapter = DS.Adapter.extend({
     if (this.log) {
       console.log.apply(console, arguments);
     }
+  },
+
+  /*
+   Sails error objects look something like this:
+
+   {"status":500,
+    "errors":[{"ValidationError":{"endDate":[{"data":"Mon, 02 Jan 2012 02:00:00 GMT",
+                                           "message":"Validation error: \"Mon, 02 Jan 2012 02:00:00 GMT\" Rule \"after(Wed, 01 Jan 2014 01:00:00 GMT)\" failed.",
+                                           "rule":"after",
+                                           "args":["Wed, 01 Jan 2014 01:00:00 GMT"]}]}}]}
+
+   Ember wants the error object to look like this:
+
+   {endDate: "Validation error: ..."}
+   */
+  formatError: function(error) {
+    var memo = {};
+    error.errors.forEach(function(errorGroup) {
+      Object.keys(errorGroup).forEach(function(errorName) {
+        // {'ValidationError': {}}
+        var errorType = errorGroup[errorName];
+        Object.keys(errorType).forEach(function(propName) {
+          var newMessages = errorType[propName].map(function(error) {
+            return error.message;
+          });
+          var messages = memo[propName] || [];
+          memo[propName] = [].concat(messages, newMessages);
+        });
+      });
+    });
+    return Ember.Object.create(memo);
   }
 });
