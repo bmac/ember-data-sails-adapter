@@ -91,7 +91,7 @@ DS.SailsAdapter = DS.Adapter.extend({
       socket[method](url, data, function (data) {
         if (isErrorObject(data)) {
           adapter._log('error:', data);
-          reject(data);
+          reject(new DS.InvalidError(data));
         } else {
           resolve(data);
         }
