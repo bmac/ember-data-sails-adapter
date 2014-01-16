@@ -1,3 +1,4 @@
+(function() {
 /*global Ember*/
 /*global DS*/
 /*global socket*/
@@ -188,3 +189,5 @@ DS.SailsAdapter = DS.Adapter.extend({
     return Ember.Object.create(memo);
   }
 });
+
+})();
