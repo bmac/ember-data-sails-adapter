@@ -23,7 +23,7 @@ App.ApplicationAdapter = DS.SailsAdapter.extend({
 ```
 
 
-### Options
+## Options
 
 #### prefix
 Type: `String`
