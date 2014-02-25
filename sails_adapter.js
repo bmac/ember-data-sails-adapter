@@ -10,6 +10,7 @@ var get = Ember.get;
 DS.SailsAdapter = DS.Adapter.extend({
   defaultSerializer: '_default',
   prefix: '',
+  method: 'ajax',
   camelize: true,
   log: false,
   init: function () {
@@ -43,14 +44,14 @@ DS.SailsAdapter = DS.Adapter.extend({
   modelNameMap: {},
 
   find: function(store, type, id) {
-    return this.socket(this.buildURL(type.typeKey, id), 'get');
+    return this.remoteCall(this.buildURL(type.typeKey, id), 'get');
   },
 
   createRecord: function(store, type, record) {
     var serializer = store.serializerFor(type.typeKey);
     var data = serializer.serialize(record, { includeId: true });
 
-    return this.socket(this.buildURL(type.typeKey), 'post', data);
+    return this.remoteCall(this.buildURL(type.typeKey), 'post', data);
   },
 
   updateRecord: function(store, type, record) {
@@ -59,7 +60,7 @@ DS.SailsAdapter = DS.Adapter.extend({
 
     var id = get(record, 'id');
 
-    return this.socket(this.buildURL(type.typeKey, id), 'put', data);
+    return this.remoteCall(this.buildURL(type.typeKey, id), 'put', data);
   },
 
   deleteRecord: function(store, type, record) {
@@ -68,19 +69,26 @@ DS.SailsAdapter = DS.Adapter.extend({
 
     var data = serializer.serialize(record);
 
-    return this.socket(this.buildURL(type.typeKey, id), 'delete', data);
+    return this.remoteCall(this.buildURL(type.typeKey, id), 'delete', data);
   },
 
   findAll: function(store, type, sinceToken) {
-    return this.socket(this.buildURL(type.typeKey), 'get');
+    return this.remoteCall(this.buildURL(type.typeKey), 'get');
   },
 
   findQuery: function(store, type, query) {
-    return this.socket(this.buildURL(type.typeKey), 'get', query);
+    return this.remoteCall(this.buildURL(type.typeKey), 'get', query);
   },
 
   isErrorObject: function(data) {
     return !!data.status;
+  },
+
+  remoteCall: function() {
+      if (this.method === 'socket') {
+          return this.socket.apply(this, arguments);
+      }
+      return this.ajax.apply(this, arguments);
   },
 
   socket: function(url, method, data ) {
