@@ -42,3 +42,11 @@ Type: `Object`
 Default value: `{}`
 
 Used to map lowercase model names that sails uses to model names that ember can understand.
+
+#### method
+Type: `String`
+Default value: `ajax`
+Supported Options `ajax` or `socket`
+
+Determines what networking method to use when requesting or sending data to/from the server. Ajax is the default options because websockets do not support compression yet. Note even when using `ajax` the sails adapter will still attempt to listen to Sails' socketIO events and add new records or update existing records in the store.
+
