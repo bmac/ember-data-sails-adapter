@@ -143,7 +143,8 @@ DS.SailsAdapter = DS.Adapter.extend({
 
     socket.on('message', function (message) {
       if (message.verb === 'create') {
-        pushMessage(message);
+        // Run later to prevent creating duplicate records when calling store.createRecord
+        Ember.run.later(null, pushMessage, message, 50);
       }
       if (message.verb === 'update') {
         pushMessage(message);
