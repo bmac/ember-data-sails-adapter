@@ -10,7 +10,6 @@ var get = Ember.get;
 DS.SailsAdapter = DS.Adapter.extend({
   defaultSerializer: '_default',
   prefix: '',
-  method: 'ajax',
   camelize: true,
   log: false,
   init: function () {
@@ -44,14 +43,14 @@ DS.SailsAdapter = DS.Adapter.extend({
   modelNameMap: {},
 
   find: function(store, type, id) {
-    return this.remoteCall(this.buildURL(type.typeKey, id), 'get');
+    return this.socket(this.buildURL(type.typeKey, id), 'get');
   },
 
   createRecord: function(store, type, record) {
     var serializer = store.serializerFor(type.typeKey);
     var data = serializer.serialize(record, { includeId: true });
 
-    return this.remoteCall(this.buildURL(type.typeKey), 'post', data);
+    return this.socket(this.buildURL(type.typeKey), 'post', data);
   },
 
   updateRecord: function(store, type, record) {
@@ -60,7 +59,7 @@ DS.SailsAdapter = DS.Adapter.extend({
 
     var id = get(record, 'id');
 
-    return this.remoteCall(this.buildURL(type.typeKey, id), 'put', data);
+    return this.socket(this.buildURL(type.typeKey, id), 'put', data);
   },
 
   deleteRecord: function(store, type, record) {
@@ -69,26 +68,19 @@ DS.SailsAdapter = DS.Adapter.extend({
 
     var data = serializer.serialize(record);
 
-    return this.remoteCall(this.buildURL(type.typeKey, id), 'delete', data);
+    return this.socket(this.buildURL(type.typeKey, id), 'delete', data);
   },
 
   findAll: function(store, type, sinceToken) {
-    return this.remoteCall(this.buildURL(type.typeKey), 'get');
+    return this.socket(this.buildURL(type.typeKey), 'get');
   },
 
   findQuery: function(store, type, query) {
-    return this.remoteCall(this.buildURL(type.typeKey), 'get', query);
+    return this.socket(this.buildURL(type.typeKey), 'get', query);
   },
 
   isErrorObject: function(data) {
     return !!data.status;
-  },
-
-  remoteCall: function() {
-      if (this.method === 'socket') {
-          return this.socket.apply(this, arguments);
-      }
-      return this.ajax.apply(this, arguments);
   },
 
   socket: function(url, method, data ) {
@@ -110,57 +102,6 @@ DS.SailsAdapter = DS.Adapter.extend({
         }
       });
     });
-  },
-
-  ajax: function(url, type, hash) {
-    var adapter = this;
-
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      hash = adapter.ajaxOptions(url, type, hash);
-
-      hash.success = function(json) {
-        Ember.run(null, resolve, json);
-      };
-
-      hash.error = function(jqXHR, textStatus, errorThrown) {
-        Ember.run(null, reject, adapter.ajaxError(jqXHR));
-      };
-
-      Ember.$.ajax(hash);
-    }, "DS: RestAdapter#ajax " + type + " to " + url);
-  },
-
-  ajaxOptions: function(url, type, hash) {
-    hash = hash || {};
-    hash.url = url;
-    hash.type = type;
-    hash.dataType = 'json';
-    hash.context = this;
-
-    if (hash.data && type !== 'GET') {
-      hash.contentType = 'application/json; charset=utf-8';
-      hash.data = JSON.stringify(hash.data);
-    }
-
-    var headers = get(this, 'headers');
-    if (headers !== undefined) {
-      hash.beforeSend = function (xhr) {
-        [].forEach.call(Ember.keys(headers), function(key) {
-          xhr.setRequestHeader(key, headers[key]);
-        });
-      };
-    }
-
-
-    return hash;
-  },
-
-  ajaxError: function(jqXHR) {
-    if (jqXHR) {
-      jqXHR.then = null;
-    }
-
-    return jqXHR;
   },
 
   buildURL: function(type, id) {
