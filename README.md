@@ -1,7 +1,7 @@
 ember-data-sails-adapter
 ========================
 
-An Ember data adapter for Sails.js sockets
+An Ember data adapter for Sails.js v0.9 sockets
 
 
 ```bash
