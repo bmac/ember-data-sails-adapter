@@ -7,8 +7,10 @@
 var RSVP = Ember.RSVP;
 var get = Ember.get;
 
+var useOldDefaultSerializer = DS.VERSION.match(/beta/) && parseInt(DS.VERSION.match(/1.0.0-beta.(\d)/)[1]) < 6;
+
 DS.SailsAdapter = DS.Adapter.extend({
-  defaultSerializer: '_default',
+  defaultSerializer: useOldDefaultSerializer? '_default': '-default',
   prefix: '',
   camelize: true,
   log: false,
