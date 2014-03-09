@@ -143,6 +143,16 @@ DS.SailsAdapter = DS.Adapter.extend({
       store.push(modelName, record);
     }
 
+    function destroy(message) {
+      var modelName = findModelName(message.model);
+      var type = store.modelFor(modelName);
+      var record = store.getById(type, message.id);
+
+      if ( record && typeof record.get('dirtyType') === 'undefined' ) {
+        record.unloadRecord();
+      }
+    }
+
     socket.on('message', function (message) {
       if (message.verb === 'create') {
         // Run later to prevent creating duplicate records when calling store.createRecord
@@ -151,7 +161,9 @@ DS.SailsAdapter = DS.Adapter.extend({
       if (message.verb === 'update') {
         pushMessage(message);
       }
-      // TODO delete
+      if (message.verb === 'destroy') {
+        destroy(message);
+      }
     });
   },
 
