@@ -146,13 +146,10 @@ DS.SailsAdapter = DS.Adapter.extend({
     function destroy(message) {
       var modelName = findModelName(message.model);
       var type = store.modelFor(modelName);
+      var record = store.getById(type, message.id);
 
-      if ( store.hasRecordForId(type, message.id) ) {
-        store.find(type, message.id).then(function(record) {
-          if ( typeof record.get('dirtyType') === 'undefined' ) {
-            record.deleteRecord();
-          }
-        });
+      if ( record && typeof record.get('dirtyType') === 'undefined' ) {
+        record.unloadRecord();
       }
     }
 
