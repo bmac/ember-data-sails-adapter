@@ -154,7 +154,16 @@ DS.SailsAdapter = DS.Adapter.extend({
       store.push(socketModel, record);
     }
 
+    function destroy(message) {
+      var modelName = findModelName(message.model);
+      var type = store.modelFor(modelName);
+      var record = store.getById(type, message.id);
 
+      if ( record && typeof record.get('dirtyType') === 'undefined' ) {
+        record.unloadRecord();
+      }
+    }
+    
     var eventName = Ember.String.camelize(model).toLowerCase();
     socket.on(eventName, function (message) {
       // Left here to help further debugging.
@@ -166,7 +175,9 @@ DS.SailsAdapter = DS.Adapter.extend({
       if (message.verb === 'updated') {
         pushMessage(message);
       }
-      // TODO delete
+      if (message.verb === 'destroy') {
+        destroy(message);
+      }
     });
 
     // We add an emtpy property instead of using an array
