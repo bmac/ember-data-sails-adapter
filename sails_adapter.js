@@ -175,7 +175,7 @@ DS.SailsAdapter = DS.Adapter.extend({
       if (message.verb === 'updated') {
         pushMessage(message);
       }
-      if (message.verb === 'destroy') {
+      if (message.verb === 'destroyed') {
         destroy(message);
       }
     });
