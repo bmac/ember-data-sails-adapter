@@ -155,8 +155,7 @@ DS.SailsAdapter = DS.Adapter.extend({
     }
 
     function destroy(message) {
-      var modelName = findModelName(message.model);
-      var type = store.modelFor(modelName);
+      var type = store.modelFor(socketModel);
       var record = store.getById(type, message.id);
 
       if ( record && typeof record.get('dirtyType') === 'undefined' ) {
