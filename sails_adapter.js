@@ -10,7 +10,7 @@ var get = Ember.get;
 var useOldDefaultSerializer = DS.VERSION.match(/beta/) && parseInt(DS.VERSION.match(/1.0.0-beta.(\d)/)[1]) < 6;
 
 DS.SailsAdapter = DS.Adapter.extend({
-  defaultSerializer: useOldDefaultSerializer? '_default': '-default',
+  defaultSerializer: '-rest',
   prefix: '',
   camelize: true,
   log: false,
@@ -163,7 +163,7 @@ DS.SailsAdapter = DS.Adapter.extend({
         record.unloadRecord();
       }
     }
-    
+
     var eventName = Ember.String.camelize(model).toLowerCase();
     socket.on(eventName, function (message) {
       // Left here to help further debugging.
