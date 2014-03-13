@@ -14,7 +14,7 @@ DS.SailsAdapter = DS.Adapter.extend({
   prefix: '',
   camelize: true,
   log: false,
-  listeningModels: [],
+  listeningModels: {},
   init: function () {
     this._super();
   },
@@ -132,8 +132,7 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   _listenToSocket: function(model) {
-    var index = $.inArray(model, this.listeningModels);
-    if(index !== -1) {
+    if(model in this.listeningModels) {
       return;
     }
     var self = this;
@@ -144,12 +143,23 @@ DS.SailsAdapter = DS.Adapter.extend({
     function pushMessage(message) {
       var type = store.modelFor(socketModel);
       var serializer = store.serializerFor(type.typeKey);
+      // Messages from 'created' don't seem to be wrapped correctly, 
+      // however messages from 'updated' are, so need to double check here.
+      if(!(model in message.data)) {
+        var obj = {};
+        obj[model] = message.data;
+        message.data = obj;
+      }
       var record = serializer.extractSingle(store, type, message.data);
       store.push(socketModel, record);
     }
 
-    socket.on(model, function (message) {
-      if (message.verb === 'create') {
+
+    var eventName = Ember.String.camelize(model).toLowerCase();
+    socket.on(eventName, function (message) {
+      // Left here to help further debugging.
+      //console.log("Got message on Socket : " + JSON.stringify(message));
+      if (message.verb === 'created') {
         // Run later to prevent creating duplicate records when calling store.createRecord
         Ember.run.later(null, pushMessage, message, 50);
       }
@@ -159,7 +169,9 @@ DS.SailsAdapter = DS.Adapter.extend({
       // TODO delete
     });
 
-    this.listeningModels.push(model);
+    // We add an emtpy property instead of using an array
+    // ao we can utilize the 'in' keyword in first test in this function.
+    this.listeningModels[model] = 0;
   },
 
   _log: function() {
