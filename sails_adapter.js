@@ -10,12 +10,12 @@ var get = Ember.get;
 var useOldDefaultSerializer = DS.VERSION.match(/beta/) && parseInt(DS.VERSION.match(/1.0.0-beta.(\d)/)[1]) < 6;
 
 DS.SailsAdapter = DS.Adapter.extend({
-  defaultSerializer: useOldDefaultSerializer? '_default': '-default',
+  defaultSerializer: '-rest',
   prefix: '',
   camelize: true,
   log: false,
+  listeningModels: {},
   init: function () {
-    this._listenToSocket();
     this._super();
   },
 
@@ -45,10 +45,12 @@ DS.SailsAdapter = DS.Adapter.extend({
   modelNameMap: {},
 
   find: function(store, type, id) {
+    this._listenToSocket(type.typeKey);
     return this.socket(this.buildURL(type.typeKey, id), 'get');
   },
 
   createRecord: function(store, type, record) {
+    this._listenToSocket(type.typeKey);
     var serializer = store.serializerFor(type.typeKey);
     var data = serializer.serialize(record, { includeId: true });
 
@@ -56,6 +58,7 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   updateRecord: function(store, type, record) {
+    this._listenToSocket(type.typeKey);
     var serializer = store.serializerFor(type.typeKey);
     var data = serializer.serialize(record);
 
@@ -65,6 +68,7 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   deleteRecord: function(store, type, record) {
+    this._listenToSocket(type.typeKey);
     var serializer = store.serializerFor(type.typeKey);
     var id = get(record, 'id');
 
@@ -74,10 +78,12 @@ DS.SailsAdapter = DS.Adapter.extend({
   },
 
   findAll: function(store, type, sinceToken) {
+    this._listenToSocket(type.typeKey);
     return this.socket(this.buildURL(type.typeKey), 'get');
   },
 
   findQuery: function(store, type, query) {
+    this._listenToSocket(type.typeKey);
     return this.socket(this.buildURL(type.typeKey), 'get', query);
   },
 
@@ -125,26 +131,31 @@ DS.SailsAdapter = DS.Adapter.extend({
     return url;
   },
 
-  _listenToSocket: function() {
+  _listenToSocket: function(model) {
+    if(model in this.listeningModels) {
+      return;
+    }
     var self = this;
     var store = this.container.lookup('store:main');
-
-    function findModelName(model) {
-      var mappedName = self.modelNameMap[model];
-      return mappedName || model;
-    }
+    var App = this.container.lookup('application:main');
+    var socketModel = model;
 
     function pushMessage(message) {
-      var modelName = findModelName(message.model);
-      var type = store.modelFor(modelName);
+      var type = store.modelFor(socketModel);
       var serializer = store.serializerFor(type.typeKey);
+      // Messages from 'created' don't seem to be wrapped correctly, 
+      // however messages from 'updated' are, so need to double check here.
+      if(!(model in message.data)) {
+        var obj = {};
+        obj[model] = message.data;
+        message.data = obj;
+      }
       var record = serializer.extractSingle(store, type, message.data);
-      store.push(modelName, record);
+      store.push(socketModel, record);
     }
 
     function destroy(message) {
-      var modelName = findModelName(message.model);
-      var type = store.modelFor(modelName);
+      var type = store.modelFor(socketModel);
       var record = store.getById(type, message.id);
 
       if ( record && typeof record.get('dirtyType') === 'undefined' ) {
@@ -152,18 +163,25 @@ DS.SailsAdapter = DS.Adapter.extend({
       }
     }
 
-    socket.on('message', function (message) {
-      if (message.verb === 'create') {
+    var eventName = Ember.String.camelize(model).toLowerCase();
+    socket.on(eventName, function (message) {
+      // Left here to help further debugging.
+      //console.log("Got message on Socket : " + JSON.stringify(message));
+      if (message.verb === 'created') {
         // Run later to prevent creating duplicate records when calling store.createRecord
         Ember.run.later(null, pushMessage, message, 50);
       }
-      if (message.verb === 'update') {
+      if (message.verb === 'updated') {
         pushMessage(message);
       }
-      if (message.verb === 'destroy') {
+      if (message.verb === 'destroyed') {
         destroy(message);
       }
     });
+
+    // We add an emtpy property instead of using an array
+    // ao we can utilize the 'in' keyword in first test in this function.
+    this.listeningModels[model] = 0;
   },
 
   _log: function() {
