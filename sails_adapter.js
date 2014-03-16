@@ -9,7 +9,7 @@ var get = Ember.get;
 
 var useOldDefaultSerializer = DS.VERSION.match(/beta/) && parseInt(DS.VERSION.match(/1.0.0-beta.(\d)/)[1]) < 6;
 
-DS.SailsAdapter = DS.Adapter.extend({
+DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend({
   defaultSerializer: useOldDefaultSerializer? '_default': '-default',
   prefix: '',
   camelize: true,
@@ -127,7 +127,7 @@ DS.SailsAdapter = DS.Adapter.extend({
 
   _listenToSocket: function() {
     var self = this;
-    var store = this.container.lookup('store:main');
+    //var store = this.container.lookup('store:main');
 
     function findModelName(model) {
       var mappedName = self.modelNameMap[model];
