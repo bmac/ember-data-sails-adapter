@@ -3,6 +3,7 @@ var socket = {on: function(){}};
 test( "DS.SailsAdapter exists", function() {
   ok(DS.SailsAdapter);
   ok(DS.SailsSocketAdapter);
+  ok(DS.SailsRESTAdapter);
 });
 
 test( "SailsSocketAdapter supports ember adapter methods", function() {
@@ -15,9 +16,9 @@ test( "SailsSocketAdapter supports ember adapter methods", function() {
 });
 
 
-asyncTest( "SailsSocketAdapter supports a url prefix", function() {
+asyncTest( "SailsSocketAdapter supports a url namespace", function() {
   DS.SailsSocketAdapter.reopen({
-    prefix: 'prefix/v1',
+    namespace: 'prefix/v1',
     socket: function(url) {
       start();
       equal(url, 'prefix/v1/');
