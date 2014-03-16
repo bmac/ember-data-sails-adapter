@@ -8,7 +8,7 @@ bower install ember-data-sails-adapter
 ```
 
 ```html
-<script type="text/javascript" src="/bower_components/ember-data-sails-adapter/sails_adapter.js"></script>
+<script type="text/javascript" src="/bower_components/ember-data-sails-adapter/ember-data-sails-adapter.js"></script>
 ```
 
 #### SailsSocketAdapter
