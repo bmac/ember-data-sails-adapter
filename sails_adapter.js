@@ -43,7 +43,18 @@ var SailsAdapterMixin = Ember.Mixin.create({
   }
 });
 
-DS.SailsRESTAdapter = DS.RESTAdapter.extend(SailsAdapterMixin);
+DS.SailsRESTAdapter = DS.RESTAdapter.extend(SailsAdapterMixin, {
+  ajaxError: function(jqXHR) {
+    var error = this._super(jqXHR);
+    var data = Ember.$.parseJSON(jqXHR.responseText);
+
+    if (data.errors) {
+      return new DS.InvalidError(this.formatError(data));
+    } else {
+      return error;
+    }
+  }
+});
 
 DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
   prefix: '',
