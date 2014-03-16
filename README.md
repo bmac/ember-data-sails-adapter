@@ -1,8 +1,7 @@
 ember-data-sails-adapter
 ========================
 
-An Ember data adapter for Sails.js v0.9 sockets
-
+An Ember Data adapter for Sails.js v0.9. This package contains 2 Adapters, `DS.SailsSocketAdapter` and `DS.SailsRESTAdapter`. 
 
 ```bash
 bower install ember-data-sails-adapter
@@ -11,6 +10,10 @@ bower install ember-data-sails-adapter
 ```html
 <script type="text/javascript" src="/bower_components/ember-data-sails-adapter/sails_adapter.js"></script>
 ```
+
+#### SailsSocketAdapter
+
+The `SailsSocketAdapter` uses Sails's [websocket support](http://sailsjs.org/#!documentation/sockets) to find, create and delete records. This has the benifit of automatically subscribing to the Sails' `update`, `create` and `delete` events for for the model. The adapter will add or update records in the store when a Sails emits an `update`, `create` and `delete` event.
 
 ```javascript
 App.ApplicationAdapter = DS.SailsSocketAdapter.extend({
@@ -22,11 +25,18 @@ App.ApplicationAdapter = DS.SailsSocketAdapter.extend({
 });
 ```
 
+#### SailsRESTAdapter
+
+The `SailsRESTAdapter` works similarly to the Ember [RESTAdapter](http://emberjs.com/api/data/classes/DS.RESTAdapter.html). The main differences are this adapter automatically attempts to use the `JSONSerializer` instead of the `RESTSerializer` because it more closely matches the JSON response from Sails. Additionally it will re-format the error messages returned by Sails to match the format that Ember Data expects. With the `SailsRESTAdapter` you will not get the live updateing that comes with the  `SailsSocketAdapter`. However, because websockets do not support compression using the `SailsRESTAdapter` may be benificial when you are expecting a large response from the Sails api.
+
 ```javascript
 App.ApplicationAdapter = DS.SailsRESTAdapter.extend({
     namespace: '/api/v1'
 });
 ```
+
+#### ApplicationSerializer
+In Sails v0.9, the `SailsSocketAdapter` and `SailsRESTAdapter` both work best using the `JSONSerializer`. As a result of a bug in the stock `JSONSerializer` it is recommend that you create an `ApplicationSerializer` by extending the `JSONSerializer` like in the example below.
 
 ```javascript
 App.ApplicationSerializer = DS.JSONSerializer.extend({
@@ -47,7 +57,8 @@ App.ApplicationSerializer = DS.JSONSerializer.extend({
 ```
 
 
-## Options
+## SailsSocketAdapter Options
+The options below are for the SailsSocketAdapter. To see a list of options for the `SailsRESTAdapter` see the [RESTAdapter docs](http://emberjs.com/api/data/classes/DS.RESTAdapter.html).
 
 #### namespace
 Type: `String`
