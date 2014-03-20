@@ -68,7 +68,7 @@ Used to map lowercase model names that sails uses to model names that ember can 
 ember-data-sails-adapter 1.x
 ============================
 
-An Ember Data adapter for Sails.js v0.10. **Note:** If you like to use this adapter with Sails.js v0.9 please use the [1.x line](https://github.com/bmac/ember-data-sails-adapter/releases/tag/1.0.0).
+An Ember Data adapter for Sails.js v0.9.
 
 This package contains 2 Adapters, `DS.SailsSocketAdapter` and `DS.SailsRESTAdapter`. 
 
