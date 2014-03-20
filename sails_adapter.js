@@ -14,9 +14,16 @@ DS.SailsAdapter = DS.Adapter.extend({
   prefix: '',
   camelize: true,
   log: false,
+  useCSRF: false,
+  CSRFToken: "",
   listeningModels: {},
   init: function () {
     this._super();
+    if(this.useCSRF) {
+      socket.get('/csrfToken', function response(tokenObject) {
+        this.CSRFToken = tokenObject._csrf;
+      }.bind(this));
+    }
   },
 
   // TODO find a better way to handle this
@@ -96,6 +103,8 @@ DS.SailsAdapter = DS.Adapter.extend({
     method = method.toLowerCase();
     var adapter = this;
     adapter._log(method, url, data);
+    if(method !== 'get')
+      this.checkCSRF(data);
     return new RSVP.Promise(function(resolve, reject) {
       socket[method](url, data, function (data) {
         if (isErrorObject(data)) {
@@ -219,6 +228,15 @@ DS.SailsAdapter = DS.Adapter.extend({
       });
     });
     return Ember.Object.create(memo);
+  },
+
+  checkCSRF: function(data) {
+    if(!this.useCSRF) return data;
+    if(this.CSRFToken.length === 0) {
+      throw new Error("CSRF Token not fetched yet.");
+    }
+    data['_csrf'] = this.CSRFToken;
+    return data;
   }
 });
 
