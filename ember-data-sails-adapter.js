@@ -57,12 +57,20 @@ DS.SailsRESTAdapter = DS.RESTAdapter.extend(SailsAdapterMixin, {
 });
 
 DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
+  defaultSerializer: '-rest',
   prefix: '',
   camelize: true,
   log: false,
+  useCSRF: false,
+  CSRFToken: "",
+  listeningModels: {},
   init: function () {
-    this._listenToSocket();
     this._super();
+    if(this.useCSRF) {
+      socket.get('/csrfToken', function response(tokenObject) {
+        this.CSRFToken = tokenObject._csrf;
+      }.bind(this));
+    }
   },
 
   // TODO find a better way to handle this
@@ -91,10 +99,12 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
   modelNameMap: {},
 
   find: function(store, type, id) {
+    this._listenToSocket(type.typeKey);
     return this.socket(this.buildURL(type.typeKey, id), 'get');
   },
 
   createRecord: function(store, type, record) {
+    this._listenToSocket(type.typeKey);
     var serializer = store.serializerFor(type.typeKey);
     var data = serializer.serialize(record, { includeId: true });
 
@@ -102,6 +112,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
   },
 
   updateRecord: function(store, type, record) {
+    this._listenToSocket(type.typeKey);
     var serializer = store.serializerFor(type.typeKey);
     var data = serializer.serialize(record);
 
@@ -111,6 +122,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
   },
 
   deleteRecord: function(store, type, record) {
+    this._listenToSocket(type.typeKey);
     var serializer = store.serializerFor(type.typeKey);
     var id = get(record, 'id');
 
@@ -120,10 +132,12 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
   },
 
   findAll: function(store, type, sinceToken) {
+    this._listenToSocket(type.typeKey);
     return this.socket(this.buildURL(type.typeKey), 'get');
   },
 
   findQuery: function(store, type, query) {
+    this._listenToSocket(type.typeKey);
     return this.socket(this.buildURL(type.typeKey), 'get', query);
   },
 
@@ -136,6 +150,8 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
     method = method.toLowerCase();
     var adapter = this;
     adapter._log(method, url, data);
+    if(method !== 'get')
+      this.checkCSRF(data);
     return new RSVP.Promise(function(resolve, reject) {
       socket[method](url, data, function (data) {
         if (isErrorObject(data)) {
@@ -172,9 +188,13 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
     return url;
   },
 
-  _listenToSocket: function() {
+  _listenToSocket: function(model) {
+    if(model in this.listeningModels) {
+      return;
+    }
     var self = this;
-    //var store = this.container.lookup('store:main');
+    var store = this.container.lookup('store:main');
+    var socketModel = model;
 
     function findModelName(model) {
       var mappedName = self.modelNameMap[model];
@@ -182,16 +202,21 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
     }
 
     function pushMessage(message) {
-      var modelName = findModelName(message.model);
-      var type = store.modelFor(modelName);
+      var type = store.modelFor(socketModel);
       var serializer = store.serializerFor(type.typeKey);
+      // Messages from 'created' don't seem to be wrapped correctly, 
+      // however messages from 'updated' are, so need to double check here.
+      if(!(model in message.data)) {
+        var obj = {};
+        obj[model] = message.data;
+        message.data = obj;
+      }
       var record = serializer.extractSingle(store, type, message.data);
-      store.push(modelName, record);
+      store.push(socketModel, record);
     }
 
     function destroy(message) {
-      var modelName = findModelName(message.model);
-      var type = store.modelFor(modelName);
+      var type = store.modelFor(socketModel);
       var record = store.getById(type, message.id);
 
       if ( record && typeof record.get('dirtyType') === 'undefined' ) {
@@ -199,24 +224,40 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
       }
     }
 
-    socket.on('message', function (message) {
-      if (message.verb === 'create') {
+    var eventName = Ember.String.camelize(model).toLowerCase();
+    socket.on(eventName, function (message) {
+      // Left here to help further debugging.
+      //console.log("Got message on Socket : " + JSON.stringify(message));
+      if (message.verb === 'created') {
         // Run later to prevent creating duplicate records when calling store.createRecord
         Ember.run.later(null, pushMessage, message, 50);
       }
-      if (message.verb === 'update') {
+      if (message.verb === 'updated') {
         pushMessage(message);
       }
-      if (message.verb === 'destroy') {
+      if (message.verb === 'destroyed') {
         destroy(message);
       }
     });
+
+    // We add an emtpy property instead of using an array
+    // ao we can utilize the 'in' keyword in first test in this function.
+    this.listeningModels[model] = 0;
   },
 
   _log: function() {
     if (this.log) {
       console.log.apply(console, arguments);
     }
+  },
+
+  checkCSRF: function(data) {
+    if(!this.useCSRF) return data;
+    if(this.CSRFToken.length === 0) {
+      throw new Error("CSRF Token not fetched yet.");
+    }
+    data['_csrf'] = this.CSRFToken;
+    return data;
   }
 });
 
