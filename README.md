@@ -77,3 +77,6 @@ Type: `Object`
 Default value: `{}`
 
 Used to map lowercase model names that sails uses to model names that ember can understand.
+
+## License
+[MIT License](http://en.wikipedia.org/wiki/MIT_License)
