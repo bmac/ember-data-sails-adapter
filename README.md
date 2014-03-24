@@ -3,7 +3,7 @@ ember-data-sails-adapter 2.0
 
 An Ember Data adapter for Sails.js v0.10. 
 
-**Note:** If you like to use this adapter with Sails.js v0.9 please use the [1.x line](https://github.com/bmac/ember-data-sails-adapter/releases/tag/1.0.0).
+**Note:** If you like to use this adapter with Sails.js v0.9 please use the [1.x line](https://github.com/bmac/ember-data-sails-adapter/tree/1.x-master) ([latest release](https://github.com/bmac/ember-data-sails-adapter/releases/tag/1.0.0)).
 
 This package contains 2 Adapters, `DS.SailsSocketAdapter` and `DS.SailsRESTAdapter`. 
 
