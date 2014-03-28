@@ -174,7 +174,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
 
   _listenToSocket: function() {
     var self = this;
-    //var store = this.container.lookup('store:main');
+    var store = this.container.lookup('store:main');
 
     function findModelName(model) {
       var mappedName = self.modelNameMap[model];
