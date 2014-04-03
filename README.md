@@ -75,7 +75,7 @@ An Ember Data adapter for Sails.js v0.9.
 This package contains 2 Adapters, `DS.SailsSocketAdapter` and `DS.SailsRESTAdapter`. 
 
 ```bash
-bower install ember-data-sails-adapter
+bower install ember-data-sails-adapter#1.0.1
 ```
 
 ```html
