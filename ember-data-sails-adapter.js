@@ -1,7 +1,7 @@
 (function() {
 /*global Ember*/
 /*global DS*/
-/*global socket*/
+/*global io*/
 'use strict';
 
 var RSVP = Ember.RSVP;
@@ -57,7 +57,7 @@ DS.SailsRESTAdapter = DS.RESTAdapter.extend(SailsAdapterMixin, {
 });
 
 DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
-  defaultSerializer: '-rest',
+  defaultSerializer: '-default',
   prefix: '',
   camelize: true,
   log: false,
@@ -67,7 +67,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
   init: function () {
     this._super();
     if(this.useCSRF) {
-      socket.get('/csrfToken', function response(tokenObject) {
+      io.socket.get('/csrfToken', function response(tokenObject) {
         this.CSRFToken = tokenObject._csrf;
       }.bind(this));
     }
@@ -153,7 +153,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
     if(method !== 'get')
       this.checkCSRF(data);
     return new RSVP.Promise(function(resolve, reject) {
-      socket[method](url, data, function (data) {
+      io.socket[method](url, data, function (data) {
         if (isErrorObject(data)) {
           adapter._log('error:', data);
           if (data.errors) {
@@ -225,7 +225,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
     }
 
     var eventName = Ember.String.camelize(model).toLowerCase();
-    socket.on(eventName, function (message) {
+    io.socket.on(eventName, function (message) {
       // Left here to help further debugging.
       //console.log("Got message on Socket : " + JSON.stringify(message));
       if (message.verb === 'created') {
