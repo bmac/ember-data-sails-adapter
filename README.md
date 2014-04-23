@@ -65,6 +65,13 @@ Default value: `false`
 Used to map lowercase model names that sails uses to model names that ember can understand.
 
 
+#### pluralize
+Type: `Boolean`
+Default value: `false`
+
+Set to true to use Ember's default pluralization functions for pluralized blueprints, e.g. a model User would have a route /users if set to true.
+
+
 ember-data-sails-adapter 1.x
 ============================
 
