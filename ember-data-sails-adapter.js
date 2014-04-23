@@ -57,14 +57,19 @@
         CSRFToken: "",
         pluralize: false,
         listeningModels: {},
+        ready: false,
         init: function() {
-            this._super();
+
             if (this.useCSRF) {
                 io.socket.get('/csrfToken', function response(tokenObject) {
                     this.CSRFToken = tokenObject._csrf;
+                    this.ready = true;
                 }.bind(this));
+            } else {
+                this.ready = true;
             }
         },
+
 
         // TODO find a better way to handle this
 
@@ -145,11 +150,22 @@
             method = method.toLowerCase();
             var adapter = this;
             adapter._log(method, url, data);
-            if (method !== 'get')
-                this.checkCSRF(data);
-            return new RSVP.Promise(function(resolve, reject) {
-                io.socket[method](url, data, function(data) {
-                    if (isErrorObject(data)) {
+            adapter.method = method;
+            adapter.data = data;
+            adapter.url = url;
+
+            return new RSVP.Promise(this.promise.bind(adapter));
+
+
+        },
+
+        promise: function(resolve, reject) {
+
+            this.checkCSRF(this.method, this.data, function() {
+                var adapter = this;
+
+                io.socket[adapter.method](adapter.url, adapter.data, function(data) {
+                    if (adapter.isErrorObject(data)) {
                         adapter._log('error:', data);
                         if (data.errors) {
                             reject(new DS.InvalidError(adapter.formatError(data)));
@@ -160,10 +176,12 @@
                         resolve(data);
                     }
                 });
-            });
+
+            }.bind(this));
         },
 
         buildURL: function(type, id) {
+
             var url = [];
 
             type = type || '';
@@ -252,14 +270,30 @@
                 console.log.apply(console, arguments);
             }
         },
+        // We use ready state incase our application is waitng on the CSRF pull
+        readyState: function(callback) {
+            if (this.ready)
+                callback();
+            else
+                setTimeout(function() {
+                    this.readyState(callback);
+                }.bind(this), 100);
+        },
 
-        checkCSRF: function(data) {
-            if (!this.useCSRF) return data;
-            if (this.CSRFToken.length === 0) {
-                throw new Error("CSRF Token not fetched yet.");
-            }
-            data['_csrf'] = this.CSRFToken;
-            return data;
+        checkCSRF: function(method, data, callback) {
+            if (method !== 'get')
+                this.readyState(function() {
+                    if (!this.useCSRF) return data;
+                    if (this.CSRFToken.length === 0) {
+                        throw new Error("CSRF Token not fetched yet.");
+                    }
+                    data['_csrf'] = this.CSRFToken;
+                    //return data;
+                    callback(data);
+
+                }.bind(this));
+            else
+                callback(data);
         }
     });
 
