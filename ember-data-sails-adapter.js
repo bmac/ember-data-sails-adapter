@@ -228,10 +228,15 @@
                 // however messages from 'updated' are, so need to double check here.
                 if (!(model in message.data)) {
                     var obj = {};
+
+                    if (message.id) {
+                        message.data.id = message.id;
+                    }
+
                     obj[model] = message.data;
-                    message.data = obj;
                 }
-                var record = serializer.extractSingle(store, type, message.data);
+
+                var record = serializer.extractSingle(store, type, obj[model]);
                 store.push(socketModel, record);
             }
 
@@ -245,9 +250,11 @@
             }
 
             var eventName = Ember.String.camelize(model).toLowerCase();
+
             io.socket.on(eventName, function(message) {
                 // Left here to help further debugging.
-                //console.log("Got message on Socket : " + JSON.stringify(message));
+                console.log("Got message on Socket : " + JSON.stringify(message));
+
                 if (message.verb === 'created') {
                     // Run later to prevent creating duplicate records when calling store.createRecord
                     Ember.run.later(null, pushMessage, message, 50);
