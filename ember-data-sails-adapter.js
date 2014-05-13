@@ -7,7 +7,18 @@
 var RSVP = Ember.RSVP;
 var get = Ember.get;
 
-var SailsAdapterMixin = Ember.Mixin.create({
+DS.SailsRESTAdapter = DS.RESTAdapter.extend({
+  defaultSerializer: '-default',
+  ajaxError: function(jqXHR) {
+    var error = this._super(jqXHR);
+    var data = Ember.$.parseJSON(jqXHR.responseText);
+
+    if (data.errors) {
+      return new DS.InvalidError(this.formatError(data));
+    } else {
+      return error;
+    }
+  },
   /*
    Sails error objects look something like this:
 
@@ -32,29 +43,17 @@ var SailsAdapterMixin = Ember.Mixin.create({
       });
       return memo;
     }, {});
+  },
+
+  pathForType: function(type) {
+    var camelized = Ember.String.camelize(type);
+    return Ember.String.singularize(camelized);
   }
 });
 
-DS.SailsRESTAdapter = DS.RESTAdapter.extend(SailsAdapterMixin, {
-  ajaxError: function(jqXHR) {
-    var error = this._super(jqXHR);
-    var data = Ember.$.parseJSON(jqXHR.responseText);
-
-    if (data.errors) {
-      return new DS.InvalidError(this.formatError(data));
-    } else {
-      return error;
-    }
-  }
-});
-
-DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
-  defaultSerializer: '-default',
-  prefix: '',
-  camelize: true,
-  log: false,
+DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
   useCSRF: false,
-  CSRFToken: "",
+  CSRFToken: '',
   listeningModels: {},
   init: function () {
     this._super();
@@ -65,76 +64,13 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
     }
   },
 
-  // TODO find a better way to handle this
-
-  // Reason: In a Sails Model updated, created, or destoryed message
-  // the model name is always lowercase. This makes it difficult to
-  // lookup models with multipart names on the ember container.
-
-  // One solution could be to implement a custom resolveModel method
-  // on the resolver to work with lowercase names. But in some cases
-  // we don't want to impose a custom resolver requirement on users of
-  // the sails_adapter.
-
-  // This modelName hash is an ugly escape has that allows a user to
-  // define a mapping between the sails lowercase model name and a
-  // string that ember can use to recognize a model with multiple
-  // parts.
-
-  // For Example A `User` model would not need to be registered with
-  // this map because ember can use the string 'user' to look up the
-  // model just fine. However a `ContentType` model will need to be
-  // registered with this map because attempting to lookup a model
-  // named 'contenttype' will not return the `ContentType` model.
-
-  // modelNameMap: {'contenttype': 'ContentType'}
-  modelNameMap: {},
-
-  find: function(store, type, id) {
-    this._listenToSocket(type.typeKey);
-    return this.socket(this.buildURL(type.typeKey, id), 'get');
-  },
-
-  createRecord: function(store, type, record) {
-    this._listenToSocket(type.typeKey);
-    var serializer = store.serializerFor(type.typeKey);
-    var data = serializer.serialize(record, { includeId: true });
-
-    return this.socket(this.buildURL(type.typeKey), 'post', data);
-  },
-
-  updateRecord: function(store, type, record) {
-    this._listenToSocket(type.typeKey);
-    var serializer = store.serializerFor(type.typeKey);
-    var data = serializer.serialize(record);
-
-    var id = get(record, 'id');
-
-    return this.socket(this.buildURL(type.typeKey, id), 'put', data);
-  },
-
-  deleteRecord: function(store, type, record) {
-    this._listenToSocket(type.typeKey);
-    var serializer = store.serializerFor(type.typeKey);
-    var id = get(record, 'id');
-
-    var data = serializer.serialize(record);
-
-    return this.socket(this.buildURL(type.typeKey, id), 'delete', data);
-  },
-
-  findAll: function(store, type, sinceToken) {
-    this._listenToSocket(type.typeKey);
-    return this.socket(this.buildURL(type.typeKey), 'get');
-  },
-
-  findQuery: function(store, type, query) {
-    this._listenToSocket(type.typeKey);
-    return this.socket(this.buildURL(type.typeKey), 'get', query);
-  },
-
   isErrorObject: function(data) {
     return !!(data.error && data.model && data.summary && data.status);
+  },
+
+
+  ajax: function(url, method, data) {
+    return this.socket(url, method, data);
   },
 
   socket: function(url, method, data ) {
@@ -161,23 +97,8 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.Adapter.extend(SailsAdapterMixin, {
   },
 
   buildURL: function(type, id) {
-    var url = [];
-
-    type = type || '';
-    if (this.camelize) {
-      type = Ember.String.camelize(type);
-    }
-
-    if (type) {
-      url.push(type);
-    }
-    if (id) { url.push(id); }
-
-    url = url.join('/');
-    var namespace = this.namespace || this.prefix;
-    url = namespace + '/' + url;
-
-    return url;
+    this._listenToSocket(type);
+    return this._super.apply(this, arguments);
   },
 
   _listenToSocket: function(model) {

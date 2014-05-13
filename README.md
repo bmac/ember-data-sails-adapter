@@ -35,13 +35,29 @@ App.ApplicationAdapter = DS.SailsRESTAdapter.extend({
 });
 ```
 
-#### ApplicationSerializer
-Unlike, the Serializer from v1.x, in version 2 of `ember-data-sails-adapter` the the `SailsSocketAdapter` and `SailsRESTAdapter` both work best using the `RESTSerializer`.
+#### Pluralised Routes
 
-```javascript
-App.ApplicationSerializer = DS.RESTSerializer.extend({});
+By default Sails does not pluralize the model names when creating urls
+to a model's route. This is different from the normal Ember Data
+conventions. To make it easy to get started the `SailsRESTAdapter` and
+`SailsSocketAdapter` will attempt to singularize the model name when
+requesting a model's route. If you would like to use a pluralized
+model name in the route you can override the default `pathForType`
+method.
+
+Example
+
+```js
+App.ApplicationAdapter = DS.SailsRESTAdapter.example({
+  pathForType: function(type) {
+    var camelized = Ember.String.camelize(type);
+    return Ember.String.pluralize(camelized);
+  }
+});
 ```
 
+You can enable pluralized routes in sails by going to
+`conifg/blueprints.js` and setting the `pluralize` variable to true.
 
 ## SailsSocketAdapter Options
 The options below are for the SailsSocketAdapter. To see a list of options for the `SailsRESTAdapter` see the [RESTAdapter docs](http://emberjs.com/api/data/classes/DS.RESTAdapter.html).
