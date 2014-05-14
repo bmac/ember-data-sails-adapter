@@ -53,6 +53,10 @@ DS.SailsRESTAdapter = DS.RESTAdapter.extend(SailsAdapterMixin, {
     } else {
       return error;
     }
+  },
+  pathForType: function(type) {
+    var camelized = Ember.String.camelize(type);
+    return Ember.String.singularize(camelized);
   }
 });
 
