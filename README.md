@@ -1,4 +1,4 @@
-ember-data-sails-adapter 2.0
+ember-data-sails-adapter 2.x
 ============================
 
 An Ember Data adapter for Sails.js v0.10. 
