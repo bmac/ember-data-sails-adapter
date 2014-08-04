@@ -1,7 +1,7 @@
 ember-data-sails-adapter 2.x
 ============================
 
-An Ember Data adapter for Sails.js v0.10. If you are looking for Sails.js blueprints that work well with Ember Data be sure to check out [sails-ember-blueprints](https://github.com/mphasize/sails-ember-blueprints)
+An Ember Data adapter for Sails.js v0.10. If you are looking for Sails.js blueprints that work well with Ember Data be sure to check out [sails-ember-blueprints](https://github.com/mphasize/sails-ember-blueprints).
 
 **Note:** If you like to use this adapter with Sails.js v0.9 please use the [1.x line](https://github.com/bmac/ember-data-sails-adapter#ember-data-sails-adapter-1x).
 
