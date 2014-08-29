@@ -73,7 +73,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
     return this.socket(url, method, data);
   },
 
-  socket: function(url, method, data ) {
+  socket: function(url, method, data) {
     var isErrorObject = this.isErrorObject.bind(this);
     method = method.toLowerCase();
     var adapter = this;
@@ -117,7 +117,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
     function pushMessage(message) {
       var type = store.modelFor(socketModel);
       var serializer = store.serializerFor(type.typeKey);
-      // Messages from 'created' don't seem to be wrapped correctly, 
+      // Messages from 'created' don't seem to be wrapped correctly,
       // however messages from 'updated' are, so need to double check here.
       if(!(model in message.data)) {
         var obj = {};
@@ -125,7 +125,11 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
         message.data = obj;
       }
       var record = serializer.extractSingle(store, type, message.data);
-      store.push(socketModel, record);
+      // If the id is not present in the record, get it from the message
+      if (!record[socketModel].id) {
+        record[socketModel].id = message.id;
+      }
+      store.push(socketModel, record[socketModel]);
     }
 
     function destroy(message) {
@@ -169,7 +173,7 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
     if(this.CSRFToken.length === 0) {
       throw new Error("CSRF Token not fetched yet.");
     }
-    data['_csrf'] = this.CSRFToken;
+    data._csrf = this.CSRFToken;
     return data;
   }
 });
