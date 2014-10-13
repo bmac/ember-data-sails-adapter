@@ -57,7 +57,7 @@ App.ApplicationAdapter = DS.SailsRESTAdapter.example({
 ```
 
 You can enable pluralized routes in sails by going to
-`conifg/blueprints.js` and setting the `pluralize` variable to true.
+`config/blueprints.js` and setting the `pluralize` variable to true.
 
 ## SailsSocketAdapter Options
 The options below are for the SailsSocketAdapter. To see a list of options for the `SailsRESTAdapter` see the [RESTAdapter docs](http://emberjs.com/api/data/classes/DS.RESTAdapter.html).
