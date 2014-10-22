@@ -78,8 +78,20 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
     method = method.toLowerCase();
     var adapter = this;
     adapter._log(method, url, data);
-    if(method !== 'get')
+    if(method !== 'get') {
       this.checkCSRF(data);
+    }
+
+    function extractPayload(data) {
+      if ('data' in data) {
+        var ret = $.extend({}, data.data);
+        ret.id = data.id;
+        return ret;
+      }
+      return data;
+    }
+
+
     return new RSVP.Promise(function(resolve, reject) {
       io.socket[method](url, data, function (data) {
         if (isErrorObject(data)) {
@@ -93,6 +105,14 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
           resolve(data);
         }
       });
+    }).then(function(data) {
+      if (Ember.typeOf(data) === 'array') {
+        return Ember.A(data).map(function(item) {
+          return extractPayload(item);
+        });
+      } else {
+        return extractPayload(data);
+      }
     });
   },
 
@@ -117,19 +137,11 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
     function pushMessage(message) {
       var type = store.modelFor(socketModel);
       var serializer = store.serializerFor(type.typeKey);
-      // Messages from 'created' don't seem to be wrapped correctly,
-      // however messages from 'updated' are, so need to double check here.
-      if(!(model in message.data)) {
-        var obj = {};
-        obj[model] = message.data;
-        message.data = obj;
-      }
-      var record = serializer.extractSingle(store, type, message.data);
-      // If the id is not present in the record, get it from the message
-      if (!record[socketModel].id) {
-        record[socketModel].id = message.id;
-      }
-      store.push(socketModel, record[socketModel]);
+
+      var payload = $.extend({}, message.data.data);
+      payload.id = message.id;
+      var record = serializer.extractSingle(store, type, payload);
+      store.push(socketModel, record);
     }
 
     function destroy(message) {
