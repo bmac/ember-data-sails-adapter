@@ -69,19 +69,19 @@ DS.SailsSocketAdapter = DS.SailsAdapter = DS.SailsRESTAdapter.extend({
   },
 
 
-  ajax: function(url, method, data) {
-    return this.socket(url, method, data);
+  ajax: function(url, method, options) {
+    return this.socket(url, method, options);
   },
 
-  socket: function(url, method, data) {
+  socket: function(url, method, options) {
     var isErrorObject = this.isErrorObject.bind(this);
     method = method.toLowerCase();
     var adapter = this;
-    adapter._log(method, url, data);
+    adapter._log(method, url, options.data);
     if(method !== 'get')
-      this.checkCSRF(data);
+      this.checkCSRF(options.data);
     return new RSVP.Promise(function(resolve, reject) {
-      io.socket[method](url, data, function (data) {
+      io.socket[method](url, options.data, function (data) {
         if (isErrorObject(data)) {
           adapter._log('error:', data);
           if (data.errors) {
