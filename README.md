@@ -1,3 +1,13 @@
+Alternates
+============================
+
+I haven't had much time to maintain this project recently as I am no longer working on a project that uses Sails.js. Here are some alternate projects that you may want to consider instead of this one.
+
+If you would like to modify your Sails.js backend to work with Ember Data out of the box check out @mphasize's [sails-ember-blueprints](https://github.com/mphasize/sails-ember-blueprints).
+
+If you would like an adapter/serializer combo for Ember Data that works well with the stock Sails.js API and supports ember-cli check out @huafu's [ember-data-sails](https://github.com/huafu/ember-data-sails)
+
+
 ember-data-sails-adapter 2.x
 ============================
 
