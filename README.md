@@ -3,7 +3,7 @@ Alternates
 
 I haven't had much time to maintain this project recently as I am no longer working on a project that uses Sails.js. Here are some alternate projects that you may want to consider instead of this one.
 
-If you would like to modify your Sails.js backend to work with Ember Data out of the box check out @mphasize's [sails-ember-blueprints](https://github.com/mphasize/sails-ember-blueprints).
+If you would like to modify your Sails.js backend to work with Ember Data out of the box check out @mphasize's [sails-generate-ember-blueprints](https://github.com/mphasize/sails-generate-ember-blueprints).
 
 If you would like an adapter/serializer combo for Ember Data that works well with the stock Sails.js API and supports ember-cli check out @huafu's [ember-data-sails](https://github.com/huafu/ember-data-sails)
 
@@ -11,7 +11,7 @@ If you would like an adapter/serializer combo for Ember Data that works well wit
 ember-data-sails-adapter 2.x
 ============================
 
-An Ember Data adapter for Sails.js v0.10. If you are looking for Sails.js blueprints that work well with Ember Data be sure to check out [sails-ember-blueprints](https://github.com/mphasize/sails-ember-blueprints).
+An Ember Data adapter for Sails.js v0.10. If you are looking for Sails.js blueprints that work well with Ember Data be sure to check out [sails-generate-ember-blueprints](https://github.com/mphasize/sails-generate-ember-blueprints).
 
 **Note:** If you like to use this adapter with Sails.js v0.9 please use the [1.x line](https://github.com/bmac/ember-data-sails-adapter#ember-data-sails-adapter-1x).
 
