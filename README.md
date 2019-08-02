@@ -27,7 +27,7 @@ bower install ember-data-sails-adapter
 
 #### SailsSocketAdapter
 
-The `SailsSocketAdapter` uses Sails's [websocket support](http://sailsjs.org/#!documentation/sockets) to find, create and delete records. This has the benifit of automatically subscribing to the Sails' `update`, `create` and `delete` events for for the model. To enable these events with Blueprint controllers in Sails v0.10 you will need to set the `autosubscribe` property on your Model. The adapter will add or update records in the store when a Sails emits an `updated`, `created` or `destroyed` event.
+The `SailsSocketAdapter` uses Sails's [websocket support](http://sailsjs.org/#!documentation/sockets) to find, create and delete records. This has the benefit of automatically subscribing to the Sails' `update`, `create` and `delete` events for for the model. To enable these events with Blueprint controllers in Sails v0.10 you will need to set the `autosubscribe` property on your Model. The adapter will add or update records in the store when a Sails emits an `updated`, `created` or `destroyed` event.
 
 ```javascript
 App.ApplicationAdapter = DS.SailsSocketAdapter.extend({
@@ -37,7 +37,7 @@ App.ApplicationAdapter = DS.SailsSocketAdapter.extend({
 
 #### SailsRESTAdapter
 
-The `SailsRESTAdapter` works similarly to the Ember [RESTAdapter](http://emberjs.com/api/data/classes/DS.RESTAdapter.html). The main differences are this adapter automatically attempts to use the `JSONSerializer` instead of the `RESTSerializer` because it more closely matches the JSON response from Sails. Additionally it will re-format the error messages returned by Sails to match the format that Ember Data expects. With the `SailsRESTAdapter` you will not get the live updateing that comes with the  `SailsSocketAdapter`. However, because websockets do not support compression using the `SailsRESTAdapter` may be benificial when you are expecting a large response from the Sails api.
+The `SailsRESTAdapter` works similarly to the Ember [RESTAdapter](http://emberjs.com/api/data/classes/DS.RESTAdapter.html). The main differences are this adapter automatically attempts to use the `JSONSerializer` instead of the `RESTSerializer` because it more closely matches the JSON response from Sails. Additionally it will re-format the error messages returned by Sails to match the format that Ember Data expects. With the `SailsRESTAdapter` you will not get the live updateing that comes with the  `SailsSocketAdapter`. However, because websockets do not support compression using the `SailsRESTAdapter` may be beneficial when you are expecting a large response from the Sails api.
 
 ```javascript
 App.ApplicationAdapter = DS.SailsRESTAdapter.extend({
@@ -110,7 +110,7 @@ bower install ember-data-sails-adapter#1.0.1
 
 #### SailsSocketAdapter
 
-The `SailsSocketAdapter` uses Sails's [websocket support](http://sailsjs.org/#!documentation/sockets) to find, create and delete records. This has the benifit of automatically subscribing to the Sails' `update`, `create` and `delete` events for for the model. The adapter will add or update records in the store when a Sails emits an `update`, `create` and `delete` event.
+The `SailsSocketAdapter` uses Sails's [websocket support](http://sailsjs.org/#!documentation/sockets) to find, create and delete records. This has the benefit of automatically subscribing to the Sails' `update`, `create` and `delete` events for for the model. The adapter will add or update records in the store when a Sails emits an `update`, `create` and `delete` event.
 
 ```javascript
 App.ApplicationAdapter = DS.SailsSocketAdapter.extend({
@@ -124,7 +124,7 @@ App.ApplicationAdapter = DS.SailsSocketAdapter.extend({
 
 #### SailsRESTAdapter
 
-The `SailsRESTAdapter` works similarly to the Ember [RESTAdapter](http://emberjs.com/api/data/classes/DS.RESTAdapter.html). The main differences are this adapter automatically attempts to use the `JSONSerializer` instead of the `RESTSerializer` because it more closely matches the JSON response from Sails. Additionally it will re-format the error messages returned by Sails to match the format that Ember Data expects. With the `SailsRESTAdapter` you will not get the live updateing that comes with the  `SailsSocketAdapter`. However, because websockets do not support compression using the `SailsRESTAdapter` may be benificial when you are expecting a large response from the Sails api.
+The `SailsRESTAdapter` works similarly to the Ember [RESTAdapter](http://emberjs.com/api/data/classes/DS.RESTAdapter.html). The main differences are this adapter automatically attempts to use the `JSONSerializer` instead of the `RESTSerializer` because it more closely matches the JSON response from Sails. Additionally it will re-format the error messages returned by Sails to match the format that Ember Data expects. With the `SailsRESTAdapter` you will not get the live updateing that comes with the  `SailsSocketAdapter`. However, because websockets do not support compression using the `SailsRESTAdapter` may be beneficial when you are expecting a large response from the Sails api.
 
 ```javascript
 App.ApplicationAdapter = DS.SailsRESTAdapter.extend({
